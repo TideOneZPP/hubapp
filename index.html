@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="乐学">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%239775fa'/%3E%3Ctext x='90' y='128' font-size='100' text-anchor='middle'%3E🎒%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext x='32' y='50' font-size='52' text-anchor='middle'%3E🎒%3C/text%3E%3C/svg%3E">
+<title>乐学 · 三科主页</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:linear-gradient(160deg,#f3f0ff 0%,#e7f5ff 50%,#fff3e6 100%);min-height:100vh;color:#3a3a3a}
+  .wrap{max-width:760px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 40px}
+  header{text-align:center;padding:24px 0 16px}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:1px}
+  .sub{font-size:14px;color:#8a8a8a}
+  .summary{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-bottom:18px}
+  .summary-title{font-size:16px;font-weight:800;margin-bottom:10px;color:#3a3a3a}
+  .stats{display:flex;gap:10px}
+  .stat{flex:1;background:#fff3e6;border-radius:14px;padding:12px;text-align:center}
+  .stat .v{font-size:24px;font-weight:800;color:#f4742a;line-height:1}
+  .stat .l{font-size:12px;color:#8a8a8a;margin-top:4px}
+  .stat.blue{background:#e7f5ff}.stat.blue .v{color:#1971c2}
+  .stat.green{background:#ebfbee}.stat.green .v{color:#2b8a3e}
+  .subjects{display:grid;grid-template-columns:1fr;gap:14px}
+  .subj{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s}
+  .subj:active{transform:scale(.98)}
+  .subj .icon{font-size:42px;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .subj.en .icon{background:#ffe8cc}
+  .subj.ma .icon{background:#dbeafe}
+  .subj.zh .icon{background:#ffe0c2}
+  .subj .body{flex:1}
+  .subj .name{font-size:20px;font-weight:800}
+  .subj .meta{font-size:13px;color:#8a8a8a;margin-top:4px;line-height:1.6}
+  .subj .meta b{color:#f4742a}
+  .subj.ma .meta b{color:#1971c2}
+  .subj.zh .meta b{color:#c9450c}
+  .arrow{font-size:28px;color:#c9c9c9}
+  .plan{background:linear-gradient(135deg,#fff,#f3f0ff);border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-top:18px}
+  .plan-title{font-size:16px;font-weight:800;margin-bottom:8px}
+  .plan-body{font-size:14px;line-height:1.9;color:#555}
+  .hint{font-size:12px;color:#8a8a8a;text-align:center;margin-top:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎒 乐学</h1>
+    <div class="sub">三年级 · 英语 + 语文 + 数学</div>
+  </header>
+
+  <div class="summary">
+    <div class="summary-title">📅 今天总览</div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="totalMin">0</div><div class="l">总学习分钟</div></div>
+      <div class="stat blue"><div class="v" id="totalQ">0</div><div class="l">总做题数</div></div>
+      <div class="stat green"><div class="v" id="totalAcc">—</div><div class="l">平均正确率</div></div>
+    </div>
+  </div>
+
+  <div class="subjects" id="subjects"></div>
+
+  <div class="plan">
+    <div class="plan-title">📝 今日建议</div>
+    <div class="plan-body" id="plan">加载中...</div>
+  </div>
+
+  <p class="hint">提示：点科目卡片进入；三科数据共享同一台 iPad 的本地存储</p>
+</div>
+
+<script>
+// 三科数据从 localStorage 直读（同一域名共享）
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function fmtMs(ms){const s=Math.round(ms/1000);if(s<60)return s+'秒';const m=Math.floor(s/60);return m+'分'+(s%60?(s%60)+'秒':'')}
+
+const SUBJECTS = [
+  {id:'en', cls:'en', icon:'🇬🇧', name:'英语乐学', url:'https://tideonezpp.github.io/enapp/',  ns:'en_'},
+  {id:'ma', cls:'ma', icon:'🔢', name:'数学乐学', url:'https://tideonezpp.github.io/mathapp/', ns:'m_'},
+  {id:'zh', cls:'zh', icon:'📖', name:'语文乐学', url:'https://tideonezpp.github.io/chineseapp/', ns:'c_'},
+];
+
+const today = todayStr();
+let totMs=0, totQ=0, totC=0;
+const subjEl = document.getElementById('subjects');
+
+SUBJECTS.forEach(s=>{
+  const stars = parseInt(localStorage.getItem(s.ns+'stars')||'0',10);
+  const streak = parseInt(localStorage.getItem(s.ns+'streak')||'0',10);
+  const days = parseInt(localStorage.getItem(s.ns+'days')||'0',10);
+  const log = JSON.parse(localStorage.getItem(s.ns+'log')||'{}');
+  const wrong = JSON.parse(localStorage.getItem(s.ns+'wrong')||'{}');
+  const tB = log[today] || {time:{},correct:0,total:0};
+  const ms = Object.values(tB.time||{}).reduce((a,b)=>a+b,0);
+  totMs += ms; totQ += tB.total||0; totC += tB.correct||0;
+
+  const todayLine = ms>0
+    ? `今天 <b>${fmtMs(ms)}</b> · 做了 <b>${tB.total||0}</b> 题${tB.total?(' · 正确率 <b>'+Math.round(tB.correct/tB.total*100)+'%</b>'):''}`
+    : '今天还没学';
+  const row=document.createElement('a');
+  row.className='subj '+s.cls; row.href=s.url;
+  row.style.textDecoration='none'; row.style.color='inherit';
+  row.innerHTML = `
+    <div class="icon">${s.icon}</div>
+    <div class="body">
+      <div class="name">${s.name}</div>
+      <div class="meta">${todayLine}<br>🔥 连续 <b>${streak}</b> 天 ｜ ⭐ ${stars} ｜ 错题 ${Object.keys(wrong).length} 个</div>
+    </div>
+    <div class="arrow">›</div>`;
+  subjEl.appendChild(row);
+});
+
+document.getElementById('totalMin').textContent = Math.round(totMs/60000) || 0;
+document.getElementById('totalQ').textContent = totQ;
+document.getElementById('totalAcc').textContent = totQ ? Math.round(totC/totQ*100)+'%' : '—';
+
+// 智能建议（基于三科今日数据）
+const tips=[];
+if(totMs===0){
+  tips.push('今天还没开始学，建议三科一起 30 分钟（语文10 + 数学10 + 英语10）');
+}else{
+  const min=Math.round(totMs/60000);
+  if(min<10) tips.push(`今天才学了 ${min} 分钟，再来 10 分钟正合适～`);
+  else if(min<30) tips.push(`今天学了 ${min} 分钟，状态不错！`);
+  else tips.push(`今天学了 ${min} 分钟，可以休息一下了`);
+}
+// 哪科最弱、哪科最强
+const subjStats = SUBJECTS.map(s=>{
+  const log=JSON.parse(localStorage.getItem(s.ns+'log')||'{}');
+  const tB=log[today]||{time:{},correct:0,total:0};
+  return {name:s.name, total:tB.total||0, acc: tB.total?tB.correct/tB.total:null, ms: Object.values(tB.time||{}).reduce((a,b)=>a+b,0)};
+});
+const withAcc = subjStats.filter(x=>x.acc!==null && x.total>=3);
+if(withAcc.length){
+  withAcc.sort((a,b)=>a.acc-b.acc);
+  const weak = withAcc[0];
+  if(weak.acc<0.6) tips.push(`${weak.name} 正确率偏低（${Math.round(weak.acc*100)}%），可以多练一下错题本`);
+}
+const noStudy = subjStats.filter(x=>x.ms===0).map(x=>x.name);
+if(noStudy.length && noStudy.length<3) tips.push(`今天 ${noStudy.join('、')} 还没开始`);
+
+document.getElementById('plan').innerHTML = tips.map(t=>'· '+t).join('<br>');
+</script>
+</body>
+</html>
