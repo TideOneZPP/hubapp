@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="apple-mobile-web-app-title" content="家长后台">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ctext x='32' y='50' font-size='52' text-anchor='middle'%3E📊%3C/text%3E%3C/svg%3E">
+<title>家长后台 · 乐学</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:#f1f3f5;min-height:100vh;color:#212529}
+  .wrap{max-width:980px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 40px}
+  header{background:linear-gradient(135deg,#4c6ef5,#9775fa);color:#fff;border-radius:20px;padding:22px 24px;box-shadow:0 6px 20px rgba(0,0,0,.08);margin-bottom:18px}
+  header h1{font-size:24px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  header .sub{font-size:13px;opacity:.85}
+  header .nav{margin-top:10px;font-size:12px}
+  header .nav a{color:#fff;text-decoration:underline;opacity:.9;margin-right:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  @media (max-width:720px){.row{grid-template-columns:1fr}}
+  .card{background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.06);padding:18px}
+  .card h3{font-size:16px;margin:0 0 12px;font-weight:800;color:#212529;display:flex;align-items:center;gap:6px}
+  .card .sub{font-size:12px;color:#868e96;font-weight:400}
+  /* 综合卡片 */
+  .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi .k{text-align:center;padding:14px 8px;border-radius:14px;background:#f8f9fa}
+  .kpi .v{font-size:24px;font-weight:800;line-height:1;color:#4c6ef5}
+  .kpi .l{font-size:11px;color:#868e96;margin-top:4px}
+  .kpi .k.orange .v{color:#fd7e14} .kpi .k.green .v{color:#37b24d} .kpi .k.red .v{color:#f03e3e}
+  /* 热力图 */
+  .heatmap{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-top:6px}
+  .heatmap div{aspect-ratio:1;border-radius:3px;background:#e9ecef}
+  .heat-legend{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:11px;color:#868e96;margin-top:6px}
+  .heat-legend i{display:inline-block;width:12px;height:12px;border-radius:2px}
+  /* 横向条 */
+  .bar-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+  .bar-row .label{width:90px;color:#495057}
+  .bar-row .bar{flex:1;height:18px;background:#e9ecef;border-radius:6px;overflow:hidden;position:relative}
+  .bar-row .bar > i{display:block;height:100%;border-radius:6px}
+  .bar-row .num{width:48px;text-align:right;color:#495057;font-weight:700}
+  /* 饼图（CSS conic-gradient） */
+  .pie-wrap{display:flex;gap:18px;align-items:center}
+  .pie{width:140px;height:140px;border-radius:50%;flex-shrink:0;position:relative;background:#e9ecef}
+  .pie-center{position:absolute;inset:30%;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#868e96;text-align:center}
+  .pie-legend{flex:1;font-size:13px}
+  .pie-legend .li{display:flex;align-items:center;gap:8px;margin:4px 0}
+  .pie-legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  /* 错题列表 */
+  .wrong-list{margin-top:6px}
+  .wrong-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px dashed #e9ecef;font-size:13px}
+  .wrong-row .em{font-size:20px}
+  .wrong-row .q{flex:1;color:#495057}
+  .wrong-row .count{background:#ffe3e3;color:#c92a2a;font-weight:800;border-radius:999px;padding:2px 10px;font-size:12px}
+  /* 预警 */
+  .alert{padding:12px 14px;border-radius:12px;margin-bottom:8px;font-size:14px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+  .alert.warn{background:#fff5f5;color:#c92a2a;border-left:4px solid #fa5252}
+  .alert.info{background:#e7f5ff;color:#1864ab;border-left:4px solid #4dabf7}
+  .alert.good{background:#ebfbee;color:#2b8a3e;border-left:4px solid #51cf66}
+  /* 目标 */
+  .goal-input{display:flex;gap:8px;margin-bottom:10px;font-size:14px}
+  .goal-input input{flex:1;border:1px solid #ced4da;border-radius:8px;padding:8px 10px;font-size:14px}
+  .goal-input button{background:#4c6ef5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+  .goal-progress{margin-top:10px;font-size:13px}
+  .goal-progress .pbar{height:14px;background:#e9ecef;border-radius:7px;overflow:hidden;margin-top:4px}
+  .goal-progress .pbar > i{display:block;height:100%;background:linear-gradient(90deg,#4c6ef5,#9775fa);border-radius:7px;transition:.3s}
+  /* 工具栏 */
+  .tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+  .tools button{background:#fff;border:1px solid #ced4da;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;color:#495057;cursor:pointer}
+  .tools button.primary{background:#4c6ef5;color:#fff;border-color:#4c6ef5}
+  .tools button.danger{color:#c92a2a;border-color:#ffc9c9}
+  /* 门禁 */
+  .gate{max-width:380px;margin:80px auto;background:#fff;border-radius:18px;padding:30px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.1)}
+  .gate input{width:100%;padding:12px;border:2px solid #ced4da;border-radius:10px;font-size:18px;text-align:center;margin:12px 0;letter-spacing:8px}
+  .gate button{width:100%;background:#4c6ef5;color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}
+  .gate .hint{font-size:12px;color:#868e96;margin-top:14px;line-height:1.6}
+  @media print{ .tools, header .nav { display:none } body{background:#fff} .card{box-shadow:none;border:1px solid #dee2e6} }
+</style>
+</head>
+<body>
+
+<!-- 门禁层 -->
+<div id="gate" class="gate" style="display:none">
+  <div style="font-size:48px">🔒</div>
+  <div style="font-size:18px;font-weight:800;margin-top:8px;">家长后台</div>
+  <div style="font-size:13px;color:#868e96;margin-top:6px;">请输入 4 位家长口令</div>
+  <input id="pin" type="tel" maxlength="4" pattern="[0-9]*" autocomplete="off" placeholder="••••">
+  <button id="gateBtn">进入</button>
+  <div class="hint">默认口令是孩子生日的月份+日期（如 5 月 28 日 = <b>0528</b>）。在设置里可改。</div>
+</div>
+
+<!-- 主体 -->
+<div id="wrap" class="wrap" style="display:none">
+  <header>
+    <h1>📊 家长后台 · 乐学</h1>
+    <div class="sub">三年级 · 三科综合数据看板 · 数据全部本地保存</div>
+    <div class="nav">
+      <a href="./">← 回主页</a>
+      <a href="#" id="logout">🔓 退出后台</a>
+      <a href="#" id="setpin">⚙️ 改口令</a>
+    </div>
+  </header>
+
+  <!-- KPI 综合 -->
+  <div class="card">
+    <h3>📈 综合 KPI <span class="sub">— 数据全部基于本地学习记录</span></h3>
+    <div class="kpi">
+      <div class="k"><div class="v" id="kpi-7d-min">0</div><div class="l">近 7 日总分钟</div></div>
+      <div class="k green"><div class="v" id="kpi-7d-q">0</div><div class="l">近 7 日题数</div></div>
+      <div class="k orange"><div class="v" id="kpi-7d-acc">—</div><div class="l">近 7 日平均正确率</div></div>
+      <div class="k red"><div class="v" id="kpi-wrong">0</div><div class="l">错题本（含未到期）</div></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- 30 天热力图 -->
+    <div class="card">
+      <h3>🗓️ 30 天学习热力图 <span class="sub">— 越深越久</span></h3>
+      <div class="heatmap" id="heatmap"></div>
+      <div class="heat-legend">少 <i style="background:#e9ecef"></i><i style="background:#a5d8ff"></i><i style="background:#4dabf7"></i><i style="background:#1971c2"></i><i style="background:#1864ab"></i> 多</div>
+    </div>
+    <!-- 错因饼图 -->
+    <div class="card">
+      <h3>🥧 错因分布 <span class="sub">— 知道错在哪类</span></h3>
+      <div class="pie-wrap">
+        <div class="pie" id="pie"><div class="pie-center" id="pie-total">0 错</div></div>
+        <div class="pie-legend" id="pie-legend"><div style="color:#868e96;font-size:12px;">还没标错因，错答后点 chip 标记</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- 三科正确率对比 -->
+    <div class="card">
+      <h3>📚 三科 7 天正确率 <span class="sub">— 哪科该补</span></h3>
+      <div id="subjAcc"></div>
+    </div>
+    <!-- 弱项 Top 错题 -->
+    <div class="card">
+      <h3>🎯 Top 5 高频错题 <span class="sub">— 多次答错的</span></h3>
+      <div id="topWrong" class="wrong-list"></div>
+    </div>
+  </div>
+
+  <!-- 周目标 -->
+  <div class="card">
+    <h3>🎯 本周目标 <span class="sub">— 家长设定，孩子打卡</span></h3>
+    <div class="goal-input">
+      <input id="goalMinutes" type="number" min="5" max="60" placeholder="每天目标分钟数" />
+      <input id="goalDays" type="number" min="1" max="7" placeholder="本周达标几天" />
+      <button id="saveGoal">保存</button>
+    </div>
+    <div class="goal-progress" id="goalProgress">还没设定本周目标</div>
+  </div>
+
+  <!-- 预警 -->
+  <div class="card">
+    <h3>🚨 智能提示 <span class="sub">— 基于真实数据</span></h3>
+    <div id="alerts"></div>
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="tools">
+    <button class="primary" id="exportPng">📸 导出 PNG 周报</button>
+    <button id="printPage">🖨️ 打印（A4）</button>
+    <button id="exportJson">💾 导出全部数据 (JSON)</button>
+    <button class="danger" id="clearAll">🗑️ 清空所有学习记录</button>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = [
+  {id:'en', name:'英语', ns:'en_', color:'#fd7e14'},
+  {id:'ma', name:'数学', ns:'m_',  color:'#1c7ed6'},
+  {id:'zh', name:'语文', ns:'c_',  color:'#e8590c'},
+];
+
+// —— 门禁 ——
+function getPin(){ return localStorage.getItem('parent_pin') || '0528'; }
+function unlocked(){
+  const t = parseInt(sessionStorage.getItem('parent_unlock_at')||'0',10);
+  return Date.now()-t < 30*60*1000; // 半小时有效
+}
+function tryUnlock(p){
+  if(p===getPin()){ sessionStorage.setItem('parent_unlock_at', Date.now()); return true; }
+  return false;
+}
+function showGate(msg){
+  document.getElementById('gate').style.display='block';
+  document.getElementById('wrap').style.display='none';
+  if(msg) alert(msg);
+  document.getElementById('pin').focus();
+}
+function showApp(){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('wrap').style.display='block';
+  render();
+}
+document.getElementById('gateBtn').onclick=()=>{
+  const p=document.getElementById('pin').value;
+  if(tryUnlock(p)) showApp(); else { alert('口令不对'); document.getElementById('pin').value=''; document.getElementById('pin').focus(); }
+};
+document.getElementById('pin').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('gateBtn').click(); });
+
+if(unlocked()) showApp(); else showGate();
+
+// —— 工具 ——
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function ymd(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function fmtMin(ms){return Math.round(ms/60000)}
+function lastN(n){const a=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);a.push({key:ymd(d),date:d})}return a}
+function readNS(ns){
+  return {
+    stars:  parseInt(localStorage.getItem(ns+'stars')||'0',10),
+    streak: parseInt(localStorage.getItem(ns+'streak')||'0',10),
+    log:    JSON.parse(localStorage.getItem(ns+'log')||'{}'),
+    wrong:  JSON.parse(localStorage.getItem(ns+'wrong')||'{}'),
+  };
+}
+
+// —— 渲染所有看板 ——
+function render(){
+  const data = {};
+  SUBJECTS.forEach(s=>data[s.id]=readNS(s.ns));
+  // ① KPI
+  const d7 = lastN(7);
+  let totMs=0, totQ=0, totC=0, totWrong=0;
+  d7.forEach(d=>{
+    SUBJECTS.forEach(s=>{
+      const b = data[s.id].log[d.key];
+      if(b){
+        totMs += Object.values(b.time||{}).reduce((a,x)=>a+x,0);
+        totQ += b.total||0; totC += b.correct||0;
+      }
+    });
+  });
+  SUBJECTS.forEach(s=>totWrong+=Object.keys(data[s.id].wrong).length);
+  document.getElementById('kpi-7d-min').textContent = fmtMin(totMs);
+  document.getElementById('kpi-7d-q').textContent = totQ;
+  document.getElementById('kpi-7d-acc').textContent = totQ? Math.round(totC/totQ*100)+'%' : '—';
+  document.getElementById('kpi-wrong').textContent = totWrong;
+
+  // ② 热力图（最近 30 天 × 3 科聚合时长）
+  const heat = document.getElementById('heatmap');
+  heat.innerHTML='';
+  // 7 列 × 30 ≈ 用 13 列 grid，行数自适应
+  const d30 = lastN(30);
+  let maxMs = 1;
+  const dayTotals = d30.map(d=>{
+    let ms=0; SUBJECTS.forEach(s=>{const b=data[s.id].log[d.key]; if(b)ms+=Object.values(b.time||{}).reduce((a,x)=>a+x,0);});
+    if(ms>maxMs) maxMs=ms;
+    return {key:d.key, ms};
+  });
+  dayTotals.forEach(d=>{
+    const cell = document.createElement('div');
+    const lv = d.ms===0?0 : d.ms/maxMs<.25?1 : d.ms/maxMs<.5?2 : d.ms/maxMs<.75?3 : 4;
+    const colors = ['#e9ecef','#a5d8ff','#4dabf7','#1971c2','#1864ab'];
+    cell.style.background = colors[lv];
+    cell.title = `${d.key}: ${fmtMin(d.ms)} 分钟`;
+    heat.appendChild(cell);
+  });
+
+  // ③ 错因饼图
+  const errorBuckets = {};
+  SUBJECTS.forEach(s=>Object.values(data[s.id].wrong).forEach(w=>{
+    const t = w.errorType || '未标注';
+    errorBuckets[t] = (errorBuckets[t]||0)+1;
+  }));
+  const totErr = Object.values(errorBuckets).reduce((a,x)=>a+x,0);
+  const pie = document.getElementById('pie');
+  const legend = document.getElementById('pie-legend');
+  document.getElementById('pie-total').textContent = totErr+' 错';
+  if(totErr>0){
+    const palette = ['#4dabf7','#ff8c42','#9775fa','#51cf66','#fa5252','#fab005','#868e96'];
+    const sorted = Object.entries(errorBuckets).sort((a,b)=>b[1]-a[1]);
+    let acc=0; const stops=[];
+    sorted.forEach(([k,v],i)=>{
+      const pct = v/totErr*100;
+      const c = palette[i%palette.length];
+      stops.push(`${c} ${acc}% ${acc+pct}%`); acc+=pct;
+    });
+    pie.style.background = `conic-gradient(${stops.join(',')})`;
+    legend.innerHTML = sorted.map(([k,v],i)=>`<div class="li"><span class="dot" style="background:${palette[i%palette.length]}"></span><span style="flex:1">${k}</span><b>${v}</b><span style="color:#868e96;margin-left:6px;font-size:12px;">${Math.round(v/totErr*100)}%</span></div>`).join('');
+  }else{
+    pie.style.background = '#e9ecef';
+    legend.innerHTML = '<div style="color:#868e96;font-size:12px;">还没有错题数据，或还没标错因。错答后点 chip 即可标记。</div>';
+  }
+
+  // ④ 三科 7 天正确率横向条
+  const sa = document.getElementById('subjAcc');
+  sa.innerHTML='';
+  SUBJECTS.forEach(s=>{
+    let c=0, t=0;
+    d7.forEach(d=>{const b=data[s.id].log[d.key]; if(b){c+=b.correct||0;t+=b.total||0;}});
+    const acc = t? Math.round(c/t*100) : 0;
+    const pct = acc;
+    sa.appendChild(Object.assign(document.createElement('div'),{
+      className:'bar-row',
+      innerHTML:`<div class="label">${s.name}</div><div class="bar"><i style="width:${Math.max(pct,2)}%;background:${s.color}"></i></div><div class="num">${t?acc+'%':'—'}</div>`
+    }));
+  });
+
+  // ⑤ Top 5 高频错题
+  const allWrong = [];
+  SUBJECTS.forEach(s=>Object.values(data[s.id].wrong).forEach(w=>{
+    let display = w.q || w.en || w.z || w.key;
+    let extra = w.cn || w.p || w.w || '';
+    let em = s.id==='en'?'🇬🇧': s.id==='ma'?'🔢' : '📖';
+    allWrong.push({em, display, extra, count:w.count||1, errorType:w.errorType});
+  }));
+  allWrong.sort((a,b)=>b.count-a.count);
+  const tw = document.getElementById('topWrong');
+  tw.innerHTML='';
+  if(allWrong.length){
+    allWrong.slice(0,5).forEach(w=>{
+      tw.appendChild(Object.assign(document.createElement('div'),{
+        className:'wrong-row',
+        innerHTML:`<span class="em">${w.em}</span><span class="q"><b>${w.display}</b> <span style="color:#868e96;">${w.extra}</span>${w.errorType?` · <span style="color:#fd7e14;">${w.errorType}</span>`:''}</span><span class="count">×${w.count}</span>`
+      }));
+    });
+  }else{
+    tw.innerHTML='<div style="color:#868e96;padding:10px 0;">还没有错题，太棒了 🎉</div>';
+  }
+
+  // ⑥ 本周目标
+  renderGoal(data);
+
+  // ⑦ 智能提示
+  renderAlerts(data);
+}
+
+// —— 周目标 ——
+function getGoal(){ return JSON.parse(localStorage.getItem('parent_goal')||'null'); }
+function saveGoalLocal(g){ localStorage.setItem('parent_goal', JSON.stringify(g)); }
+function renderGoal(data){
+  const g = getGoal();
+  const el = document.getElementById('goalProgress');
+  if(!g){ el.innerHTML='还没设定本周目标 — 上方填两个数字然后保存'; return; }
+  // 本周（周一开始）每日分钟，每日 min>=goalMin 算 1 天
+  const today = new Date(); const wd = today.getDay(); // 0=日
+  const monOff = (wd===0?-6:1-wd);
+  const days=[]; for(let i=0;i<7;i++){const d=new Date();d.setDate(today.getDate()+monOff+i);days.push(d);}
+  const passed = days.filter(d=>{
+    if(d>today) return false;
+    let ms=0; SUBJECTS.forEach(s=>{const b=(JSON.parse(localStorage.getItem(s.ns+'log')||'{}'))[ymd(d)]; if(b)ms+=Object.values(b.time||{}).reduce((a,x)=>a+x,0);});
+    return fmtMin(ms)>=g.minutes;
+  }).length;
+  const pct = Math.min(100, Math.round(passed/g.days*100));
+  el.innerHTML = `本周目标：每天 <b>${g.minutes}</b> 分钟 × <b>${g.days}</b> 天 ｜ 已达标 <b style="color:${passed>=g.days?'#37b24d':'#fd7e14'}">${passed}</b> 天 (${pct}%)<div class="pbar"><i style="width:${pct}%"></i></div>`;
+  document.getElementById('goalMinutes').value=g.minutes;
+  document.getElementById('goalDays').value=g.days;
+}
+document.getElementById('saveGoal').onclick=()=>{
+  const m=parseInt(document.getElementById('goalMinutes').value,10);
+  const d=parseInt(document.getElementById('goalDays').value,10);
+  if(!m||!d||m<1||d<1||d>7){alert('请输入正确的数字');return;}
+  saveGoalLocal({minutes:m,days:d,setAt:Date.now()}); render(); alert('已保存本周目标 ✅');
+};
+
+// —— 智能提示 ——
+function renderAlerts(data){
+  const el = document.getElementById('alerts');
+  el.innerHTML='';
+  const today = todayStr();
+  const yest = ymd((d=>(d.setDate(d.getDate()-1),d))(new Date()));
+  const alerts=[];
+
+  // 连续 N 天没学
+  const allDates = new Set();
+  SUBJECTS.forEach(s=>Object.keys(data[s.id].log).forEach(d=>allDates.add(d)));
+  // 检查最近 7 天有几天学
+  const d7 = lastN(7);
+  const noStudy = d7.filter(d=>!allDates.has(d.key)).length;
+  if(noStudy>=3) alerts.push({lv:'warn',msg:`最近 7 天有 <b>${noStudy}</b> 天没学习，建议重新建立学习节奏`});
+
+  // 正确率下滑（7天 vs 30天）
+  SUBJECTS.forEach(s=>{
+    let c7=0,t7=0,c30=0,t30=0;
+    lastN(7).forEach(d=>{const b=data[s.id].log[d.key]; if(b){c7+=b.correct||0;t7+=b.total||0;}});
+    lastN(30).forEach(d=>{const b=data[s.id].log[d.key]; if(b){c30+=b.correct||0;t30+=b.total||0;}});
+    if(t7>=20 && t30>=50){
+      const a7=c7/t7, a30=c30/t30;
+      if(a7<a30-0.1) alerts.push({lv:'warn',msg:`<b>${s.name}</b> 近 7 天正确率 ${Math.round(a7*100)}% 比近 30 天 ${Math.round(a30*100)}% 下滑 ${Math.round((a30-a7)*100)} 个点，需关注`});
+    }
+  });
+
+  // 错题暴增
+  SUBJECTS.forEach(s=>{
+    const w = Object.keys(data[s.id].wrong).length;
+    if(w>=20) alerts.push({lv:'warn',msg:`<b>${s.name}</b> 错题本累计 <b>${w}</b> 个，建议本周专项消化`});
+    else if(w>=10) alerts.push({lv:'info',msg:`<b>${s.name}</b> 错题本累计 ${w} 个，可以做"错题专项"复习`});
+  });
+
+  // 好消息
+  const maxStreak = Math.max(...SUBJECTS.map(s=>data[s.id].streak));
+  if(maxStreak>=7) alerts.push({lv:'good',msg:`🎉 已连续打卡 <b>${maxStreak}</b> 天，坚持得真好！`});
+  let allAcc=0,allTot=0;
+  lastN(7).forEach(d=>{SUBJECTS.forEach(s=>{const b=data[s.id].log[d.key]; if(b){allAcc+=b.correct||0;allTot+=b.total||0;}});});
+  if(allTot>=30 && allAcc/allTot>=0.85) alerts.push({lv:'good',msg:`✨ 近 7 天综合正确率 ${Math.round(allAcc/allTot*100)}%，状态很好`});
+
+  if(alerts.length===0){ el.innerHTML='<div class="alert info">📊 暂无需要特别关注的信号。学习节奏稳定。</div>'; return; }
+  alerts.forEach(a=>{
+    el.appendChild(Object.assign(document.createElement('div'),{
+      className:'alert '+a.lv, innerHTML: (a.lv==='warn'?'⚠️ ':a.lv==='good'?'🌟 ':'💡 ')+a.msg
+    }));
+  });
+}
+
+// —— 工具栏 ——
+document.getElementById('logout').onclick=(e)=>{e.preventDefault();sessionStorage.removeItem('parent_unlock_at');showGate();};
+document.getElementById('setpin').onclick=(e)=>{
+  e.preventDefault();
+  const np = prompt('设置新的 4 位口令（数字）：');
+  if(np && /^\d{4}$/.test(np)){ localStorage.setItem('parent_pin', np); alert('已保存 ✅'); }
+  else if(np!==null){ alert('必须是 4 位数字'); }
+};
+document.getElementById('exportPng').onclick=async function(){
+  if(typeof html2canvas==='undefined'){alert('截图库未加载');return;}
+  this.textContent='📸 正在生成…'; this.disabled=true;
+  try{
+    const c = await html2canvas(document.getElementById('wrap'), {backgroundColor:'#f1f3f5',scale:2,logging:false});
+    const a = document.createElement('a');
+    a.download='家长周报-'+new Date().toISOString().slice(0,10)+'.png';
+    a.href=c.toDataURL('image/png'); a.click();
+    this.textContent='✅ 已下载';
+  }catch(e){this.textContent='⚠️ 失败:'+e.message;}
+  setTimeout(()=>{this.textContent='📸 导出 PNG 周报';this.disabled=false;},2500);
+};
+document.getElementById('printPage').onclick=()=>window.print();
+document.getElementById('exportJson').onclick=()=>{
+  const dump = {};
+  SUBJECTS.forEach(s=>['stars','streak','days','lastday','log','wrong'].forEach(k=>{
+    const v=localStorage.getItem(s.ns+k); if(v!==null) dump[s.ns+k]=v;
+  }));
+  dump.parent_goal = localStorage.getItem('parent_goal');
+  const blob = new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.download='乐学全数据-'+new Date().toISOString().slice(0,10)+'.json';
+  a.href=URL.createObjectURL(blob); a.click();
+};
+document.getElementById('clearAll').onclick=()=>{
+  const ans=prompt('⚠️ 此操作清空所有学习记录，不可恢复！\n输入"全部清空"确认：');
+  if(ans==='全部清空'){
+    SUBJECTS.forEach(s=>['stars','streak','days','lastday','log','wrong'].forEach(k=>localStorage.removeItem(s.ns+k)));
+    localStorage.removeItem('parent_goal');
+    alert('已清空 ✅'); render();
+  }
+};
+</script>
+</body>
+</html>

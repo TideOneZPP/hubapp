@@ -15,33 +15,53 @@
   header{text-align:center;padding:24px 0 16px}
   h1{font-size:28px;margin:0 0 4px;letter-spacing:1px}
   .sub{font-size:14px;color:#8a8a8a}
-  .summary{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-bottom:18px}
-  .summary-title{font-size:16px;font-weight:800;margin-bottom:10px;color:#3a3a3a}
+  .card{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-bottom:16px}
+  .card-title{font-size:16px;font-weight:800;margin-bottom:10px}
   .stats{display:flex;gap:10px}
   .stat{flex:1;background:#fff3e6;border-radius:14px;padding:12px;text-align:center}
   .stat .v{font-size:24px;font-weight:800;color:#f4742a;line-height:1}
   .stat .l{font-size:12px;color:#8a8a8a;margin-top:4px}
   .stat.blue{background:#e7f5ff}.stat.blue .v{color:#1971c2}
   .stat.green{background:#ebfbee}.stat.green .v{color:#2b8a3e}
+  /* 今日任务 */
+  .task{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:#f8f9fa;margin-bottom:8px;cursor:pointer;transition:.1s;text-decoration:none;color:inherit}
+  .task:active{transform:scale(.99)}
+  .task.done{background:#ebfbee;opacity:.8}
+  .task .ck{font-size:24px;width:30px;flex-shrink:0}
+  .task .body{flex:1}
+  .task .t{font-weight:800;font-size:15px}
+  .task .d{font-size:12px;color:#8a8a8a;margin-top:2px}
+  .task .arrow{color:#c9c9c9;font-size:22px}
+  /* 科目卡 */
   .subjects{display:grid;grid-template-columns:1fr;gap:14px}
-  .subj{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s}
+  .subj{background:#fff;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.1s;text-decoration:none;color:inherit}
   .subj:active{transform:scale(.98)}
   .subj .icon{font-size:42px;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .subj.en .icon{background:#ffe8cc}
-  .subj.ma .icon{background:#dbeafe}
-  .subj.zh .icon{background:#ffe0c2}
+  .subj.en .icon{background:#ffe8cc}.subj.ma .icon{background:#dbeafe}.subj.zh .icon{background:#ffe0c2}
   .subj .body{flex:1}
   .subj .name{font-size:20px;font-weight:800}
   .subj .meta{font-size:13px;color:#8a8a8a;margin-top:4px;line-height:1.6}
   .subj .meta b{color:#f4742a}
-  .subj.ma .meta b{color:#1971c2}
-  .subj.zh .meta b{color:#c9450c}
+  .subj.ma .meta b{color:#1971c2}.subj.zh .meta b{color:#c9450c}
   .arrow{font-size:28px;color:#c9c9c9}
-  .plan{background:linear-gradient(135deg,#fff,#f3f0ff);border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:18px;margin-top:18px}
-  .plan-title{font-size:16px;font-weight:800;margin-bottom:8px}
-  .plan-body{font-size:14px;line-height:1.9;color:#555}
+  /* 勋章 */
+  .medals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .medal{aspect-ratio:1/1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;background:#f8f9fa;font-size:11px;color:#8a8a8a;line-height:1.3}
+  .medal.unlocked{background:linear-gradient(135deg,#fff3e6,#ffe0c2);color:#c9450c;box-shadow:inset 0 0 0 2px #ffd8a8}
+  .medal .em{font-size:34px;line-height:1;margin-bottom:4px;filter:grayscale(1) opacity(.4)}
+  .medal.unlocked .em{filter:none}
+  .medal .n{font-weight:800;font-size:11px}
+  /* 周报 */
+  .week{display:flex;gap:6px;align-items:flex-end;height:90px;padding-top:6px}
+  .week .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .week .col .bars{display:flex;gap:2px;align-items:flex-end;height:60px}
+  .week .col .b{width:6px;border-radius:2px 2px 0 0}
+  .week .col .l{font-size:10px;color:#8a8a8a}
+  .legend{display:flex;justify-content:center;gap:12px;font-size:11px;color:#8a8a8a;margin-top:6px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
   .hint{font-size:12px;color:#8a8a8a;text-align:center;margin-top:18px;line-height:1.6}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -50,8 +70,9 @@
     <div class="sub">三年级 · 英语 + 语文 + 数学</div>
   </header>
 
-  <div class="summary">
-    <div class="summary-title">📅 今天总览</div>
+  <!-- 今天总览 -->
+  <div class="card">
+    <div class="card-title">📅 今天总览</div>
     <div class="stats">
       <div class="stat"><div class="v" id="totalMin">0</div><div class="l">总学习分钟</div></div>
       <div class="stat blue"><div class="v" id="totalQ">0</div><div class="l">总做题数</div></div>
@@ -59,87 +80,243 @@
     </div>
   </div>
 
-  <div class="subjects" id="subjects"></div>
-
-  <div class="plan">
-    <div class="plan-title">📝 今日建议</div>
-    <div class="plan-body" id="plan">加载中...</div>
+  <!-- 今日任务清单 -->
+  <div class="card">
+    <div class="card-title">🎯 今日任务（按完成度领奖）</div>
+    <div id="tasks"></div>
   </div>
 
-  <p class="hint">提示：点科目卡片进入；三科数据共享同一台 iPad 的本地存储</p>
+  <!-- 科目入口 -->
+  <div class="subjects" id="subjects"></div>
+
+  <!-- 成就勋章 -->
+  <div class="card">
+    <div class="card-title">🏅 成就勋章 <span id="medalCount" style="font-size:12px;color:#8a8a8a;font-weight:400;"></span></div>
+    <div class="medals" id="medals"></div>
+  </div>
+
+  <!-- 本周学习趋势 -->
+  <div class="card">
+    <div class="card-title">📈 本周三科趋势（分钟）</div>
+    <div class="week" id="week"></div>
+    <div class="legend">
+      <span><i style="background:#ff8c42"></i>英语</span>
+      <span><i style="background:#4dabf7"></i>数学</span>
+      <span><i style="background:#e8590c"></i>语文</span>
+    </div>
+  </div>
+
+  <!-- 家长后台入口 -->
+  <div style="display:flex;gap:10px;justify-content:center;margin:20px auto 0;flex-wrap:wrap;">
+    <button id="exportBtn" style="background:#9775fa;color:#fff;border:none;border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.08);cursor:pointer;">📸 导出周报 (PNG)</button>
+    <a id="parentLink" href="parent.html" style="background:#4c6ef5;color:#fff;border:none;border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.08);text-decoration:none;display:inline-flex;align-items:center;">📊 家长后台 (需口令)</a>
+  </div>
+
+  <p class="hint">提示：点任务/科目进入；三科数据共享同一台 iPad 的本地存储；导出可保存到相册或转发给家长。</p>
 </div>
+<script>
+document.getElementById('exportBtn').onclick = async function(){
+  if(typeof html2canvas==='undefined'){ alert('截图库加载中，请稍后再试'); return; }
+  this.textContent='📸 正在生成…'; this.disabled=true;
+  try{
+    const target = document.querySelector('.wrap');
+    const canvas = await html2canvas(target, {backgroundColor:'#f3f0ff', scale:2, useCORS:true, logging:false});
+    const link = document.createElement('a');
+    link.download = '乐学周报-'+new Date().toISOString().slice(0,10)+'.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    this.textContent='✅ 已生成，请查看下载';
+  }catch(e){
+    this.textContent='⚠️ 导出失败: '+e.message;
+  }
+  setTimeout(()=>{ this.textContent='📸 导出家长周报 (PNG)'; this.disabled=false; }, 3000);
+};
+</script>
 
 <script>
-// 三科数据从 localStorage 直读（同一域名共享）
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function ymd(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function fmtMs(ms){const s=Math.round(ms/1000);if(s<60)return s+'秒';const m=Math.floor(s/60);return m+'分'+(s%60?(s%60)+'秒':'')}
+function last7(){const a=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);a.push({key:ymd(d),dow:'日一二三四五六'[d.getDay()]})}return a}
 
 const SUBJECTS = [
-  {id:'en', cls:'en', icon:'🇬🇧', name:'英语乐学', url:'https://tideonezpp.github.io/enapp/',  ns:'en_'},
-  {id:'ma', cls:'ma', icon:'🔢', name:'数学乐学', url:'https://tideonezpp.github.io/mathapp/', ns:'m_'},
-  {id:'zh', cls:'zh', icon:'📖', name:'语文乐学', url:'https://tideonezpp.github.io/chineseapp/', ns:'c_'},
+  {id:'en', cls:'en', icon:'🇬🇧', name:'英语乐学', url:'https://tideonezpp.github.io/enapp/',     ns:'en_', color:'#ff8c42'},
+  {id:'ma', cls:'ma', icon:'🔢', name:'数学乐学', url:'https://tideonezpp.github.io/mathapp/',   ns:'m_',  color:'#4dabf7'},
+  {id:'zh', cls:'zh', icon:'📖', name:'语文乐学', url:'https://tideonezpp.github.io/chineseapp/', ns:'c_',  color:'#e8590c'},
 ];
+
+// —— 通用读取 ——
+function readNS(ns){
+  return {
+    stars:  parseInt(localStorage.getItem(ns+'stars')||'0',10),
+    streak: parseInt(localStorage.getItem(ns+'streak')||'0',10),
+    days:   parseInt(localStorage.getItem(ns+'days')||'0',10),
+    log:    JSON.parse(localStorage.getItem(ns+'log')||'{}'),
+    wrong:  JSON.parse(localStorage.getItem(ns+'wrong')||'{}'),
+  };
+}
+function dueCount(wrong){const now=Date.now(); return Object.values(wrong).filter(w=>(w.due||0)<=now).length}
 
 const today = todayStr();
 let totMs=0, totQ=0, totC=0;
-const subjEl = document.getElementById('subjects');
+let subjData = {};
 
+// —— 1. 今天总览 + 科目卡片 ——
+const subjEl = document.getElementById('subjects');
 SUBJECTS.forEach(s=>{
-  const stars = parseInt(localStorage.getItem(s.ns+'stars')||'0',10);
-  const streak = parseInt(localStorage.getItem(s.ns+'streak')||'0',10);
-  const days = parseInt(localStorage.getItem(s.ns+'days')||'0',10);
-  const log = JSON.parse(localStorage.getItem(s.ns+'log')||'{}');
-  const wrong = JSON.parse(localStorage.getItem(s.ns+'wrong')||'{}');
-  const tB = log[today] || {time:{},correct:0,total:0};
+  const d = readNS(s.ns); subjData[s.id] = d;
+  const tB = d.log[today] || {time:{},correct:0,total:0};
   const ms = Object.values(tB.time||{}).reduce((a,b)=>a+b,0);
   totMs += ms; totQ += tB.total||0; totC += tB.correct||0;
-
+  const due = dueCount(d.wrong);
   const todayLine = ms>0
-    ? `今天 <b>${fmtMs(ms)}</b> · 做了 <b>${tB.total||0}</b> 题${tB.total?(' · 正确率 <b>'+Math.round(tB.correct/tB.total*100)+'%</b>'):''}`
+    ? `今天 <b>${fmtMs(ms)}</b> · <b>${tB.total||0}</b> 题${tB.total?(' · 正确率 <b>'+Math.round(tB.correct/tB.total*100)+'%</b>'):''}`
     : '今天还没学';
+  const dueLine = due>0 ? ` ｜ 📕 <b style="color:#c92a52">${due}</b> 个待复习` : '';
   const row=document.createElement('a');
   row.className='subj '+s.cls; row.href=s.url;
-  row.style.textDecoration='none'; row.style.color='inherit';
   row.innerHTML = `
     <div class="icon">${s.icon}</div>
     <div class="body">
       <div class="name">${s.name}</div>
-      <div class="meta">${todayLine}<br>🔥 连续 <b>${streak}</b> 天 ｜ ⭐ ${stars} ｜ 错题 ${Object.keys(wrong).length} 个</div>
+      <div class="meta">${todayLine}<br>🔥 连续 <b>${d.streak}</b> 天 ｜ ⭐ ${d.stars}${dueLine}</div>
     </div>
     <div class="arrow">›</div>`;
   subjEl.appendChild(row);
 });
-
 document.getElementById('totalMin').textContent = Math.round(totMs/60000) || 0;
 document.getElementById('totalQ').textContent = totQ;
 document.getElementById('totalAcc').textContent = totQ ? Math.round(totC/totQ*100)+'%' : '—';
 
-// 智能建议（基于三科今日数据）
-const tips=[];
-if(totMs===0){
-  tips.push('今天还没开始学，建议三科一起 30 分钟（语文10 + 数学10 + 英语10）');
+// —— 2. 今日任务清单（基于真实数据）——
+const tasksEl = document.getElementById('tasks');
+const tasks = [];
+// 任务1：复习到期错题（哪科有就推哪科，优先到期数最多的）
+let dueBest = null;
+SUBJECTS.forEach(s=>{ const d=dueCount(subjData[s.id].wrong); if(d>0 && (!dueBest||d>dueBest.n)) dueBest={s, n:d}; });
+if(dueBest){
+  tasks.push({
+    ck:'📕', t:`复习 ${dueBest.s.name} ${dueBest.n} 个到期错题`,
+    d:'艾宾浩斯曲线提醒：这些错题该再见一次了',
+    url:dueBest.s.url, done:false
+  });
 }else{
-  const min=Math.round(totMs/60000);
-  if(min<10) tips.push(`今天才学了 ${min} 分钟，再来 10 分钟正合适～`);
-  else if(min<30) tips.push(`今天学了 ${min} 分钟，状态不错！`);
-  else tips.push(`今天学了 ${min} 分钟，可以休息一下了`);
+  tasks.push({ck:'✨', t:'今天没有到期错题', d:'继续保持，新学一组词/字也很棒', url:null, done:true});
 }
-// 哪科最弱、哪科最强
-const subjStats = SUBJECTS.map(s=>{
-  const log=JSON.parse(localStorage.getItem(s.ns+'log')||'{}');
-  const tB=log[today]||{time:{},correct:0,total:0};
-  return {name:s.name, total:tB.total||0, acc: tB.total?tB.correct/tB.total:null, ms: Object.values(tB.time||{}).reduce((a,b)=>a+b,0)};
+// 任务2：新学（按"今天还没学过"挑一科）
+const noStudy = SUBJECTS.filter(s=>{
+  const tB = subjData[s.id].log[today] || {time:{}};
+  return Object.values(tB.time||{}).reduce((a,b)=>a+b,0)===0;
 });
-const withAcc = subjStats.filter(x=>x.acc!==null && x.total>=3);
-if(withAcc.length){
-  withAcc.sort((a,b)=>a.acc-b.acc);
-  const weak = withAcc[0];
-  if(weak.acc<0.6) tips.push(`${weak.name} 正确率偏低（${Math.round(weak.acc*100)}%），可以多练一下错题本`);
+if(noStudy.length){
+  const s = noStudy[0];
+  tasks.push({
+    ck:'🆕', t:`新学 1 组 ${s.name} 内容`,
+    d:'每天每科 10 分钟，比一次半小时更有效',
+    url:s.url, done:false
+  });
+}else{
+  tasks.push({ck:'✅', t:'三科今天都打开过了', d:'真棒！按节奏继续就好', url:null, done:true});
 }
-const noStudy = subjStats.filter(x=>x.ms===0).map(x=>x.name);
-if(noStudy.length && noStudy.length<3) tips.push(`今天 ${noStudy.join('、')} 还没开始`);
+// 任务3：弱项强化（今天正确率<70%且做了≥3题的）
+let weak=null;
+SUBJECTS.forEach(s=>{
+  const tB = subjData[s.id].log[today] || {correct:0,total:0};
+  if((tB.total||0)>=3){
+    const acc = tB.correct/tB.total;
+    if(acc<0.7 && (!weak||acc<weak.acc)) weak={s, acc, total:tB.total};
+  }
+});
+if(weak){
+  tasks.push({
+    ck:'🎯', t:`${weak.s.name} 弱项强化`,
+    d:`今天正确率 ${Math.round(weak.acc*100)}%，建议进错题专项练习`,
+    url:weak.s.url, done:false
+  });
+}else if(totQ>=10){
+  tasks.push({ck:'💪', t:'今天三科都达标，无弱项', d:'继续保持稳定输出', url:null, done:true});
+}
+tasks.forEach(t=>{
+  const el = t.url
+    ? document.createElement('a')
+    : document.createElement('div');
+  if(t.url) el.href=t.url;
+  el.className='task'+(t.done?' done':'');
+  el.innerHTML = `<div class="ck">${t.ck}</div><div class="body"><div class="t">${t.t}</div><div class="d">${t.d}</div></div>${t.url?'<div class="arrow">›</div>':''}`;
+  tasksEl.appendChild(el);
+});
 
-document.getElementById('plan').innerHTML = tips.map(t=>'· '+t).join('<br>');
+// —— 3. 成就勋章 ——
+const allWrong = SUBJECTS.reduce((acc,s)=>acc+Object.keys(subjData[s.id].wrong).length, 0);
+const maxStreak = Math.max(...SUBJECTS.map(s=>subjData[s.id].streak));
+const totalStars = SUBJECTS.reduce((acc,s)=>acc+subjData[s.id].stars, 0);
+const totalDays = SUBJECTS.reduce((acc,s)=>acc+Object.keys(subjData[s.id].log).length, 0);
+// 错题改对率（artistic 估计：所有stage>=3的错题数）
+let promoted=0;
+SUBJECTS.forEach(s=>Object.values(subjData[s.id].wrong).forEach(w=>{ if((w.stage||0)>=3) promoted++; }));
+// 任意一科今天 acc=100%
+let perfectToday=false;
+SUBJECTS.forEach(s=>{ const tB=subjData[s.id].log[today]||{}; if((tB.total||0)>=5 && tB.correct===tB.total) perfectToday=true; });
+// 古诗/单词/数题 三全收
+const polyMath = SUBJECTS.every(s=>(subjData[s.id].log[today]||{total:0}).total>0);
+
+const MEDALS = [
+  {em:'🌱', n:'初学',     cond: totalStars>=10,        hint:'累计 10 ⭐'},
+  {em:'🐝', n:'勤奋蜂',   cond: totalStars>=50,        hint:'累计 50 ⭐'},
+  {em:'⭐', n:'学霸',     cond: totalStars>=200,       hint:'累计 200 ⭐'},
+  {em:'👑', n:'王者',     cond: totalStars>=500,       hint:'累计 500 ⭐'},
+  {em:'🔥', n:'坚持 3 天',cond: maxStreak>=3,          hint:'连续打卡 3 天'},
+  {em:'💪', n:'坚持 7 天',cond: maxStreak>=7,          hint:'连续打卡 7 天'},
+  {em:'🏆', n:'坚持 30 天',cond: maxStreak>=30,        hint:'连续打卡 30 天'},
+  {em:'📚', n:'好学者',   cond: totalDays>=10,         hint:'学习满 10 天'},
+  {em:'📕', n:'错题征服', cond: promoted>=5,            hint:'复习5次答对≥5 题'},
+  {em:'🎯', n:'满分日',   cond: perfectToday,          hint:'今天某科 5+ 题全对'},
+  {em:'🌟', n:'全勤日',   cond: polyMath,              hint:'今天三科都学过'},
+  {em:'💯', n:'错题清零', cond: allWrong===0 && totalStars>=20, hint:'错题本清空且 20+⭐'},
+];
+const medalsEl = document.getElementById('medals');
+let unlocked=0;
+MEDALS.forEach(m=>{
+  if(m.cond) unlocked++;
+  const el=document.createElement('div');
+  el.className='medal'+(m.cond?' unlocked':'');
+  el.title = m.cond?'已解锁':'未解锁：'+m.hint;
+  el.innerHTML = `<div class="em">${m.em}</div><div class="n">${m.n}</div>`;
+  medalsEl.appendChild(el);
+});
+document.getElementById('medalCount').textContent = ` (${unlocked}/${MEDALS.length})`;
+
+// —— 4. 本周三科趋势 ——
+const days = last7();
+const weekEl = document.getElementById('week');
+let maxMin = 1;
+SUBJECTS.forEach(s=>{
+  days.forEach(d=>{
+    const b = subjData[s.id].log[d.key] || {time:{}};
+    const ms = Object.values(b.time||{}).reduce((a,x)=>a+x,0);
+    maxMin = Math.max(maxMin, ms/60000);
+  });
+});
+days.forEach(d=>{
+  const col = document.createElement('div'); col.className='col';
+  const bars = document.createElement('div'); bars.className='bars';
+  SUBJECTS.forEach(s=>{
+    const b = subjData[s.id].log[d.key] || {time:{}};
+    const min = Object.values(b.time||{}).reduce((a,x)=>a+x,0)/60000;
+    const h = Math.max(2, Math.round(min/maxMin*60));
+    const bar = document.createElement('div'); bar.className='b';
+    bar.style.height = h+'px';
+    bar.style.background = min>0 ? s.color : '#eee';
+    bar.title = `${s.name} ${d.key}: ${Math.round(min)}分`;
+    bars.appendChild(bar);
+  });
+  col.appendChild(bars);
+  const lbl = document.createElement('div'); lbl.className='l';
+  lbl.textContent = '周'+d.dow;
+  if(d.key===today) lbl.style.color='#f4742a', lbl.style.fontWeight='800';
+  col.appendChild(lbl);
+  weekEl.appendChild(col);
+});
 </script>
 </body>
 </html>
